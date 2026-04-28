@@ -12,7 +12,7 @@ import ResumeBuilder from "./pages/ResumeBuilder";
 import AptitudeTraining from "./pages/AptitudeTraining";
 import MockInterview from "./pages/MockInterview";
 import GDSimulator from "./pages/GDSimulator";
-import CompanyTracker from "./pages/CompanyTracker";
+import CompanyTracker from "./pages/companyTracker";
 import OfferComparison from "./pages/OfferComparison";
 import Pricing from "./pages/Pricing";
 
