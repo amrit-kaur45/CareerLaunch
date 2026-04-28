@@ -407,6 +407,7 @@ const Home = () => {
 
           <div className="hero-actions">
             <Link to="/signup" className="btn-primary">Build My Resume →</Link>
+            <Link to="/dashboard" className="btn-secondary">Go to Dashboard</Link>
             <Link to="#templates" className="btn-secondary">See Templates</Link>
           </div>
 

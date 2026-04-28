@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function AIResumeAnalyzer() {
   const [tab, setTab] = useState("score"); // score | match | cover
@@ -17,6 +17,13 @@ export default function AIResumeAnalyzer() {
     reader.readAsText(file);
   };
 
+  useEffect(() => {
+  const saved = localStorage.getItem("resumeText");
+  if (saved) {
+    setResumeText(saved);
+  }
+}, []);
+
   const analyzeResume = async () => {
     if (!resumeText.trim()) return;
     setLoading(true);
@@ -33,7 +40,7 @@ export default function AIResumeAnalyzer() {
             content: `You are an expert ATS (Applicant Tracking System) and resume evaluator. Analyze this resume and return ONLY a JSON object (no markdown):
 
 RESUME TEXT:
-${resumeText.slice(0, 3000)}
+${resumeText.split("\n").slice(0, 80).join("\n")}
 
 Return:
 {
@@ -56,7 +63,16 @@ Return:
       });
       const data = await resp.json();
       const text = data.content?.[0]?.text || "{}";
-      const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+      const extractJSON = (text) => {
+  try {
+    return JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
+  } catch {
+    return null;
+  }
+};
+
+const parsed = extractJSON(text);
+if (!parsed) throw new Error("Invalid AI response");
       setResult({ type: "score", data: parsed });
     } catch (e) {
       setResult({ type: "error", data: { ats_score: 62, verdict: "Parsing error — try with plain text resume." } });
@@ -80,10 +96,10 @@ Return:
             content: `Compare this resume against this job description. Return ONLY JSON (no markdown):
 
 RESUME:
-${resumeText.slice(0, 2000)}
+${resumeText.split("\n").slice(0, 80).join("\n")}
 
 JOB DESCRIPTION:
-${jdText.slice(0, 1500)}
+${jdText.split("\n").slice(0, 50).join("\n")}
 
 Return:
 {
@@ -124,10 +140,10 @@ Return:
             content: `Write a professional, tailored cover letter for this candidate based on their resume and the job description. Keep it 3–4 short paragraphs. Make it genuine, not generic. End with a clear call to action.
 
 RESUME:
-${resumeText.slice(0, 2000)}
+${resumeText.split("\n").slice(0, 80).join("\n")}
 
 JOB DESCRIPTION:
-${jdText.slice(0, 1200)}
+${jdText.split("\n").slice(0, 50).join("\n")}
 
 Write the cover letter directly. No intro text.`
           }]

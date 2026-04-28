@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function Login() {
+
+export default function Login({setIsLoggedIn }) {
   const [mode, setMode] = useState("login"); // "login" | "signup"
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [showPass, setShowPass] = useState(false);
@@ -11,13 +12,59 @@ export default function Login() {
   const set = (f, v) => setForm((p) => ({ ...p, [f]: v }));
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigate("/resume");
-    }, 1200);
+  e.preventDefault();
+  setLoading(true);
+
+  setTimeout(() => {
+    if (mode === "login") {
+      handleLogin();
+    } else {
+      handleSignup();
+    }
+    setLoading(false);
+  }, 100);
+};
+
+  const handleSignup = () => {
+  if (!form.email || !form.password) {
+    alert("Fill all fields");
+    return;
+  }
+
+  const user = {
+    email: form.email,
+    password: form.password,
   };
+
+  setForm({ name: "", email: "", password: "" });
+
+  localStorage.setItem("user", JSON.stringify(user));
+  alert("Signup successful!");
+
+  setMode("login"); // ✅ fix
+};
+
+const handleLogin = () => {
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+
+  if (!storedUser) {
+    alert("No account found. Please sign up.");
+    return;
+  }
+
+  if (
+    form.email === storedUser.email &&
+    form.password === storedUser.password
+  ) {
+    localStorage.setItem("isLoggedIn", "true");
+    navigate("/dashboard");
+    setIsLoggedIn(true); // ✅ important
+  } else {
+    alert("Invalid credentials");
+  }
+};
+
+
 
   return (
     <>

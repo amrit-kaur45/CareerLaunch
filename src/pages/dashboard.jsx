@@ -1,142 +1,157 @@
 import { useEffect, useState } from "react";
+import AptitudeTraining from "../pages/AptitudeTraining";
 
 export default function Dashboard() {
   const [resume, setResume] = useState(null);
   const [score, setScore] = useState(0);
+  const [showAptitude, setShowAptitude] = useState(false);
 
+  // ---------------- LOAD DATA ----------------
   useEffect(() => {
-    const data = localStorage.getItem("resume");
+    try {
+      const data = localStorage.getItem("savedResume"); // FIXED KEY
 
-    if (data) {
-      const parsed = JSON.parse(data);
-      setResume(parsed);
-
-      let tempScore = 0;
-      if (parsed.name) tempScore += 25;
-      if (parsed.email) tempScore += 20;
-      if (parsed.skills?.length > 5) tempScore += 25;
-      if (parsed.projects?.length > 5) tempScore += 30;
-
-      setScore(tempScore);
+      if (data) {
+        const parsed = JSON.parse(data);
+        setResume(parsed);
+        calculateScore(parsed);
+      }
+    } catch (err) {
+      console.error("Invalid resume data:", err);
     }
   }, []);
 
-  const getJobs = (skills = "") => {
-    const s = skills.toLowerCase();
-    let jobs = [];
+  // ---------------- SCORE LOGIC ----------------
+  const calculateScore = (data) => {
+    let tempScore = 0;
 
-    if (s.includes("react")) jobs.push("Frontend Developer");
-    if (s.includes("node")) jobs.push("Backend Developer");
-    if (s.includes("sql")) jobs.push("Database Developer");
-    if (s.includes("python") || s.includes("java")) jobs.push("Software Engineer");
+    if (data?.name) tempScore += 10;
+    if (data?.email) tempScore += 10;
+    if (data?.summary && data.summary.length > 30) tempScore += 15;
 
-    if (!jobs.length) jobs.push("Internship (Skill Building)");
+    if (data?.experience) tempScore += 20;
+    if (data?.education) tempScore += 10;
 
-    return jobs;
+    if (data?.skills && data.skills.split(",").filter(Boolean).length >= 3)
+      tempScore += 15;
+
+    setScore(Math.min(tempScore, 100));
   };
 
-  if (!resume) {
-    return (
-      <div style={emptyStyle}>
-        <h2>No Resume Found</h2>
-        <p>Please create your resume first.</p>
-      </div>
-    );
-  }
+  // ---------------- STATUS ----------------
+  const getStatus = () => {
+    if (score >= 80) return "Strong";
+    if (score >= 50) return "Average";
+    return "Needs Improvement";
+  };
 
+  // ---------------- RESET VIEW ----------------
+  const handleBack = () => {
+    setShowAptitude(false);
+  };
+
+  // ---------------- UI ----------------
   return (
-    <div style={pageStyle}>
-      <h1>Dashboard 📊</h1>
-      <h3>Welcome {resume.name} 🚀</h3>
+    <>
+      {showAptitude ? (
+        <div>
+          {/* Back button */}
+          <button
+            onClick={handleBack}
+            style={{
+              position: "absolute",
+              top: 20,
+              left: 20,
+              padding: "10px 16px",
+              borderRadius: 8,
+              border: "1px solid #2a3450",
+              background: "#161c2e",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            ← Back to Dashboard
+          </button>
 
-      {/* GRID */}
-      <div style={grid}>
+          <AptitudeTraining />
+        </div>
+      ) : (
+        <div className="dashboard-wrap">
 
-        {/* SCORE CARD */}
-        <div style={card}>
-          <h3>ATS Score</h3>
+          {/* HEADER */}
+          <div className="dashboard-header">
+            <h1>Resume Dashboard</h1>
+            <p>Analyze and improve your resume</p>
 
-          <div style={barBg}>
-            <div style={{ ...barFill, width: `${score}%` }}></div>
+            <button
+              onClick={() => setShowAptitude(true)}
+              style={{
+                marginTop: 16,
+                padding: "10px 18px",
+                background: "#4F7EFF",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              Start Aptitude Training
+            </button>
           </div>
 
-          <h2>{score}/100</h2>
-        </div>
+          {/* EMPTY STATE */}
+          {!resume ? (
+            <div className="dashboard-empty">
+              No resume found. Please create one first.
+            </div>
+          ) : (
+            <div className="dashboard-grid">
 
-        {/* INFO */}
-        <div style={card}>
-          <h3>Email</h3>
-          <p>{resume.email}</p>
-        </div>
+              {/* SCORE CARD */}
+              <div className="dashboard-card">
+                <h2>Resume Score</h2>
 
-        <div style={card}>
-          <h3>Skills</h3>
-          <p>{resume.skills}</p>
-        </div>
+                <div className="score-circle">
+                  <span>{score}</span>
+                </div>
 
-        <div style={card}>
-          <h3>Projects</h3>
-          <p>{resume.projects}</p>
-        </div>
+                <p className="score-status">{getStatus()}</p>
+              </div>
 
-        {/* JOBS */}
-        <div style={cardWide}>
-          <h3>Recommended Jobs 💼</h3>
-          <ul>
-            {getJobs(resume.skills).map((job, i) => (
-              <li key={i}>{job}</li>
-            ))}
-          </ul>
-        </div>
+              {/* BREAKDOWN */}
+              <div className="dashboard-card">
+                <h2>Breakdown</h2>
 
-      </div>
-    </div>
+                <ul className="score-list">
+                  <li>Name: {resume.name ? "✔" : "✕"}</li>
+                  <li>Email: {resume.email ? "✔" : "✕"}</li>
+                  <li>Summary: {resume.summary ? "✔" : "✕"}</li>
+                  <li>Experience: {resume.experience ? "✔" : "✕"}</li>
+                  <li>Education: {resume.education ? "✔" : "✕"}</li>
+                  <li>Skills: {resume.skills ? "✔" : "✕"}</li>
+                </ul>
+              </div>
+
+              {/* SUGGESTIONS */}
+              <div className="dashboard-card">
+                <h2>Suggestions</h2>
+
+                <ul className="suggestion-list">
+                  {!resume.summary && <li>Add a strong summary</li>}
+                  {!resume.skills && <li>Include key skills</li>}
+                  {!resume.experience && <li>Add experience</li>}
+                  {resume.skills &&
+                    resume.skills.split(",").length < 3 && (
+                      <li>Add at least 3 skills</li>
+                    )}
+                </ul>
+              </div>
+
+            </div>
+          )}
+        </div>
+      )}
+    </>
   );
 }
-
-/* STYLES */
-
-const pageStyle = {
-  padding: "20px"
-};
-
-const emptyStyle = {
-  padding: "50px",
-  textAlign: "center"
-};
-
-const grid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(2, 1fr)",
-  gap: "15px",
-  marginTop: "20px"
-};
-
-const card = {
-  padding: "15px",
-  border: "1px solid #ddd",
-  borderRadius: "10px",
-  background: "#fff"
-};
-
-const cardWide = {
-  gridColumn: "span 2",
-  padding: "15px",
-  border: "1px solid #ddd",
-  borderRadius: "10px",
-  background: "#fff"
-};
-
-const barBg = {
-  height: "15px",
-  background: "#eee",
-  borderRadius: "10px",
-  overflow: "hidden",
-  marginTop: "10px"
-};
-
-const barFill = {
-  height: "100%",
-  background: "green",
-  transition: "0.3s"
-};
