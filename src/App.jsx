@@ -3,7 +3,7 @@ import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 
 
 import Navbar from "./components/Navbar";
-import Sidebar from "./components/Sidebar";
+import Sidebar from "./components/sidebar";
 
 import Home from "./pages/Home";
 import Login from "./pages/login";
