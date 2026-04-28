@@ -5,7 +5,7 @@ import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/sidebar";
 
-import Home from "./pages/Home";
+import Home from "./pages/home";
 import Login from "./pages/login";
 import Dashboard from "./pages/Dashboard";
 import ResumeBuilder from "./pages/ResumeBuilder";
