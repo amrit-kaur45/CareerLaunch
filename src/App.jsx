@@ -7,7 +7,7 @@ import Sidebar from "./components/sidebar";
 
 import Home from "./pages/home";
 import Login from "./pages/login";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/dashboard";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import AptitudeTraining from "./pages/AptitudeTraining";
 import MockInterview from "./pages/MockInterview";
